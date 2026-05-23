@@ -1,0 +1,179 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import numpy as np
+import joblib
+
+# ==========================================
+# CREATE FLASK APP
+# ==========================================
+app = Flask(__name__)
+CORS(app)
+
+# ==========================================
+# LOAD TRAINED MODEL
+# ==========================================
+model = joblib.load("knn_model.pkl")
+
+# ==========================================
+# LABEL MAPPING
+# ==========================================
+label_mapping = {
+    0: "M, B, RA",
+    1: "M, F, B, RA",
+    2: "M, F, RA",
+    3: "M, F, RA, C",
+    4: "M, RA",
+    5: "M, RA, C"
+}
+
+# ==========================================
+# FEATURE SCALING
+# ==========================================
+def feature_scale(C, Si, Mn, TMAE, Ac1, Ac3, MS, Qtemp, Ptemp):
+
+    mean = {
+        "C": 0.293711,
+        "Si": 1.353189,
+        "Mn": 2.130231,
+        "TMAE": 0.017715,
+        "Ac1": 742.445838,
+        "Ac3": 829.178609,
+        "MS": 357.581143,
+        "Qtemp": 226.697143,
+        "Ptemp": 367.342857
+    }
+
+    std = {
+        "C": 0.175460,
+        "Si": 0.538275,
+        "Mn": 1.180975,
+        "TMAE": 0.045991,
+        "Ac1": 12.901875,
+        "Ac3": 35.662434,
+        "MS": 61.784294,
+        "Qtemp": 77.922007,
+        "Ptemp": 80.983794
+    }
+
+    return [[
+        (C - mean["C"]) / std["C"],
+        (Si - mean["Si"]) / std["Si"],
+        (Mn - mean["Mn"]) / std["Mn"],
+        (TMAE - mean["TMAE"]) / std["TMAE"],
+        (Ac1 - mean["Ac1"]) / std["Ac1"],
+        (Ac3 - mean["Ac3"]) / std["Ac3"],
+        (MS - mean["MS"]) / std["MS"],
+        (Qtemp - mean["Qtemp"]) / std["Qtemp"],
+        (Ptemp - mean["Ptemp"]) / std["Ptemp"]
+    ]]
+
+# ==========================================
+# HOME ROUTE
+# ==========================================
+@app.route('/')
+def home():
+
+    return jsonify({
+        "message": "Q&P Steel Prediction API Running"
+    })
+
+# ==========================================
+# PREDICTION ROUTE
+# ==========================================
+@app.route('/predict', methods=['POST'])
+def predict():
+
+    try:
+
+        data = request.get_json()
+
+        # ==========================================
+        # GET INPUTS
+        # ==========================================
+        C = float(data['C'])
+        Si = float(data['Si'])
+        Mn = float(data['Mn'])
+        TMAE = float(data['TMAE'])
+        Ac1 = float(data['Ac1'])
+        Ac3 = float(data['Ac3'])
+        Ms = float(data['Ms'])
+        QT = float(data['QT'])
+        PT = float(data['PT'])
+
+        # ==========================================
+        # APPLY SCALING
+        # ==========================================
+        scaled_input = feature_scale(
+            C,
+            Si,
+            Mn,
+            TMAE,
+            Ac1,
+            Ac3,
+            Ms,
+            QT,
+            PT
+        )
+
+        print("==============")
+        print("RAW INPUT:", data)
+        print("SCALED INPUT:", scaled_input)
+
+        # ==========================================
+        # PREDICT
+        # ==========================================
+        prediction = model.predict(scaled_input)[0]
+
+        print("PREDICTION:", prediction)
+
+        # ==========================================
+        # CONFIDENCE
+        # ==========================================
+        confidence = 90
+
+        if hasattr(model, "predict_proba"):
+
+            probs = model.predict_proba(scaled_input)
+
+            confidence = round(
+                float(np.max(probs)) * 100,
+                2
+            )
+
+        # ==========================================
+        # RETURN RESULT
+        # ==========================================
+        return jsonify({
+
+            "success": True,
+
+            "prediction_code": int(prediction),
+
+            "prediction_label":
+                label_mapping.get(int(prediction), "Unknown"),
+
+            "confidence": confidence
+
+        })
+
+    except Exception as e:
+
+        print("ERROR:", str(e))
+
+        return jsonify({
+
+            "success": False,
+            "error": str(e)
+
+        })
+
+# ==========================================
+# RUN APP
+# ==========================================
+if __name__ == '__main__':
+
+    app.run(
+        debug=True,
+        host='0.0.0.0',
+        port=5000
+    )
