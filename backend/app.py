@@ -7,6 +7,10 @@ import joblib
 # CREATE FLASK APP
 # ==========================================
 app = Flask(__name__)
+
+# ==========================================
+# ENABLE CORS
+# ==========================================
 CORS(app)
 
 # ==========================================
@@ -18,16 +22,23 @@ model = joblib.load("knn_model.pkl")
 # LABEL MAPPING
 # ==========================================
 label_mapping = {
-    0: "M, B, RA",
-    1: "M, F, B, RA",
-    2: "M, F, RA",
-    3: "M, F, RA, C",
-    4: "M, RA",
-    5: "M, RA, C"
+
+    1: "M, B, RA",
+
+    3: "M, F, B, RA",
+
+    4: "M, F, RA",
+
+    5: "M, F, RA, C",
+
+    6: "M, RA",
+
+    8: "M, RA, C"
+
 }
 
 # ==========================================
-# FEATURE SCALING
+# FEATURE SCALING FUNCTION
 # ==========================================
 def feature_scale(C, Si, Mn, TMAE, Ac1, Ac3, MS, Qtemp, Ptemp):
 
@@ -55,7 +66,7 @@ def feature_scale(C, Si, Mn, TMAE, Ac1, Ac3, MS, Qtemp, Ptemp):
         "Ptemp": 80.983794
     }
 
-    return [[
+    scaled = [[
         (C - mean["C"]) / std["C"],
         (Si - mean["Si"]) / std["Si"],
         (Mn - mean["Mn"]) / std["Mn"],
@@ -66,6 +77,8 @@ def feature_scale(C, Si, Mn, TMAE, Ac1, Ac3, MS, Qtemp, Ptemp):
         (Qtemp - mean["Qtemp"]) / std["Qtemp"],
         (Ptemp - mean["Ptemp"]) / std["Ptemp"]
     ]]
+
+    return scaled
 
 # ==========================================
 # HOME ROUTE
@@ -85,10 +98,13 @@ def predict():
 
     try:
 
+        # ==========================================
+        # GET INPUT DATA
+        # ==========================================
         data = request.get_json()
 
         # ==========================================
-        # GET INPUTS
+        # EXTRACT FEATURES
         # ==========================================
         C = float(data['C'])
         Si = float(data['Si'])
@@ -101,7 +117,7 @@ def predict():
         PT = float(data['PT'])
 
         # ==========================================
-        # APPLY SCALING
+        # APPLY FEATURE SCALING
         # ==========================================
         scaled_input = feature_scale(
             C,
@@ -115,25 +131,27 @@ def predict():
             PT
         )
 
-        print("==============")
-        print("RAW INPUT:", data)
-        print("SCALED INPUT:", scaled_input)
+        # ==========================================
+        # MODEL PREDICTION
+        # ==========================================
+        raw_prediction = model.predict(scaled_input)
+
+        prediction = np.array(
+            raw_prediction
+        ).flatten()[0]
+
+        prediction = int(prediction)
 
         # ==========================================
-        # PREDICT
-        # ==========================================
-        prediction = model.predict(scaled_input)[0]
-
-        print("PREDICTION:", prediction)
-
-        # ==========================================
-        # CONFIDENCE
+        # CONFIDENCE SCORE
         # ==========================================
         confidence = 90
 
         if hasattr(model, "predict_proba"):
 
-            probs = model.predict_proba(scaled_input)
+            probs = model.predict_proba(
+                scaled_input
+            )
 
             confidence = round(
                 float(np.max(probs)) * 100,
@@ -141,16 +159,19 @@ def predict():
             )
 
         # ==========================================
-        # RETURN RESULT
+        # RETURN RESPONSE
         # ==========================================
         return jsonify({
 
             "success": True,
 
-            "prediction_code": int(prediction),
+            "prediction_code": prediction,
 
             "prediction_label":
-                label_mapping.get(int(prediction), "Unknown"),
+                label_mapping.get(
+                    prediction,
+                    f"Unknown Class {prediction}"
+                ),
 
             "confidence": confidence
 
@@ -158,14 +179,13 @@ def predict():
 
     except Exception as e:
 
-        print("ERROR:", str(e))
-
         return jsonify({
 
             "success": False,
+
             "error": str(e)
 
-        })
+        }), 500
 
 # ==========================================
 # RUN APP
@@ -173,7 +193,6 @@ def predict():
 if __name__ == '__main__':
 
     app.run(
-        debug=True,
         host='0.0.0.0',
         port=5000
     )

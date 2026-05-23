@@ -12,12 +12,49 @@ const COLORS = {
 };
 
 const microstructureClasses = [
-  { code: 0, label: "M, B, RA", full: "Martensite + Bainite + Retained Austenite", color: "#2563eb" },
-  { code: 1, label: "M, F, B, RA", full: "Martensite + Ferrite + Bainite + Retained Austenite", color: "#7c3aed" },
-  { code: 2, label: "M, F, RA", full: "Martensite + Ferrite + Retained Austenite", color: "#059669" },
-  { code: 3, label: "M, F, RA, C", full: "Martensite + Ferrite + RA + Carbide", color: "#d97706" },
-  { code: 4, label: "M, RA", full: "Martensite + Retained Austenite", color: "#dc2626" },
-  { code: 5, label: "M, RA, C", full: "Martensite + RA + Carbide", color: "#0891b2" },
+
+  {
+    code: 1,
+    label: "M, B, RA",
+    full: "Martensite + Bainite + Retained Austenite",
+    color: "#2563eb"
+  },
+
+  {
+    code: 3,
+    label: "M, F, B, RA",
+    full: "Martensite + Ferrite + Bainite + Retained Austenite",
+    color: "#7c3aed"
+  },
+
+  {
+    code: 4,
+    label: "M, F, RA",
+    full: "Martensite + Ferrite + Retained Austenite",
+    color: "#059669"
+  },
+
+  {
+    code: 5,
+    label: "M, F, RA, C",
+    full: "Martensite + Ferrite + RA + Carbide",
+    color: "#d97706"
+  },
+
+  {
+    code: 6,
+    label: "M, RA",
+    full: "Martensite + Retained Austenite",
+    color: "#dc2626"
+  },
+
+  {
+    code: 8,
+    label: "M, RA, C",
+    full: "Martensite + RA + Carbide",
+    color: "#0891b2"
+  }
+
 ];
 
 const classMetrics = [
