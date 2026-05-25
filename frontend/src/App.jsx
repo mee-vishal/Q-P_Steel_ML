@@ -12,49 +12,12 @@ const COLORS = {
 };
 
 const microstructureClasses = [
-
-  {
-    code: 1,
-    label: "M, B, RA",
-    full: "Martensite + Bainite + Retained Austenite",
-    color: "#2563eb"
-  },
-
-  {
-    code: 3,
-    label: "M, F, B, RA",
-    full: "Martensite + Ferrite + Bainite + Retained Austenite",
-    color: "#7c3aed"
-  },
-
-  {
-    code: 4,
-    label: "M, F, RA",
-    full: "Martensite + Ferrite + Retained Austenite",
-    color: "#059669"
-  },
-
-  {
-    code: 5,
-    label: "M, F, RA, C",
-    full: "Martensite + Ferrite + RA + Carbide",
-    color: "#d97706"
-  },
-
-  {
-    code: 6,
-    label: "M, RA",
-    full: "Martensite + Retained Austenite",
-    color: "#dc2626"
-  },
-
-  {
-    code: 8,
-    label: "M, RA, C",
-    full: "Martensite + RA + Carbide",
-    color: "#0891b2"
-  }
-
+  { code: 1, label: "M, B, RA", full: "Martensite + Bainite + Retained Austenite", color: "#2563eb" },
+  { code: 3, label: "M, F, B, RA", full: "Martensite + Ferrite + Bainite + Retained Austenite", color: "#7c3aed" },
+  { code: 4, label: "M, F, RA", full: "Martensite + Ferrite + Retained Austenite", color: "#059669" },
+  { code: 5, label: "M, F, RA, C", full: "Martensite + Ferrite + RA + Carbide", color: "#d97706" },
+  { code: 6, label: "M, RA", full: "Martensite + Retained Austenite", color: "#dc2626" },
+  { code: 8, label: "M, RA, C", full: "Martensite + RA + Carbide", color: "#0891b2" },
 ];
 
 const classMetrics = [
@@ -105,14 +68,14 @@ function ConfusionMatrixViz() {
       <table style={{ borderCollapse: "collapse", margin: "0 auto", fontSize: 11 }}>
         <thead>
           <tr>
-            <th style={{ padding: "4px 6px", color: COLORS.steel, fontSize: 10 }}>Actual ↓</th>
-            {classLabels.map(l => <th key={l} style={{ padding: "4px 6px", color: COLORS.navy, fontWeight: 600, fontSize: 10 }}>{l}</th>)}
+            <th style={{ padding: "4px 4px", color: COLORS.steel, fontSize: 10 }}>Actual ↓</th>
+            {classLabels.map(l => <th key={l} style={{ padding: "4px 4px", color: COLORS.navy, fontWeight: 600, fontSize: 10 }}>{l}</th>)}
           </tr>
         </thead>
         <tbody>
           {confusionMatrix.map((row, i) => (
             <tr key={i}>
-              <td style={{ padding: "4px 6px", fontWeight: 600, fontSize: 10, color: COLORS.navy }}>{classLabels[i]}</td>
+              <td style={{ padding: "4px 4px", fontWeight: 600, fontSize: 10, color: COLORS.navy }}>{classLabels[i]}</td>
               {row.map((val, j) => {
                 const isCorrect = i === j;
                 const intensity = val / max;
@@ -123,14 +86,14 @@ function ConfusionMatrixViz() {
                   : `rgba(100,116,139,${intensity * 0.3})`;
                 const textColor = intensity > 0.5 && isCorrect ? "#fff" : COLORS.navy;
                 return (
-                  <td key={j} style={{ background: bg, padding: "5px 8px", textAlign: "center", fontWeight: isCorrect ? 700 : 400, color: textColor, border: "1px solid rgba(255,255,255,0.5)", fontSize: 12, transition: "background 0.3s" }}>{val}</td>
+                  <td key={j} style={{ background: bg, padding: "5px 6px", textAlign: "center", fontWeight: isCorrect ? 700 : 400, color: textColor, border: "1px solid rgba(255,255,255,0.5)", fontSize: 12, transition: "background 0.3s" }}>{val}</td>
                 );
               })}
             </tr>
           ))}
         </tbody>
       </table>
-      <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 12, fontSize: 11, color: COLORS.steel }}>
+      <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 12, fontSize: 11, color: COLORS.steel, flexWrap: "wrap" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 12, height: 12, borderRadius: 2, background: "rgba(37,99,235,0.7)", display: "inline-block" }} /> Correct prediction</span>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 12, height: 12, borderRadius: 2, background: "rgba(220,38,38,0.5)", display: "inline-block" }} /> Misclassified</span>
       </div>
@@ -157,70 +120,35 @@ function PredictionTool() {
   ];
 
   const handlePredict = async () => {
-
-  setLoading(true)
-
-  setResult(null)
-
-  setGrokSuggestion(null)
-
-  try {
-
-const response = await fetch(
-  `${import.meta.env.VITE_API_URL}/predict`,
-      {
+    setLoading(true);
+    setResult(null);
+    setGrokSuggestion(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
         method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify(inputs)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(inputs),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.success) {
+        const cls = microstructureClasses.find(item => item.code === data.prediction_code);
+        setResult({ cls, confidence: data.confidence || 90 });
+        setGrokSuggestion(`Model predicted ${data.prediction_label} with ${data.confidence}% confidence.`);
+      } else {
+        alert(data.error);
       }
-    )
-
-    const data = await response.json()
-
-    console.log(data)
-
-    if (data.success) {
-
-      const cls = microstructureClasses.find(
-        item => item.code === data.prediction_code
-      )
-
-      setResult({
-
-        cls: cls,
-
-        confidence: data.confidence || 90
-
-      })
-
-      setGrokSuggestion(
-        `Model predicted ${data.prediction_label} with ${data.confidence}% confidence.`
-      )
-
-    } else {
-
-      alert(data.error)
-
+    } catch (error) {
+      console.log(error);
+      alert("Backend connection failed");
     }
-
-  } catch (error) {
-
-    console.log(error)
-
-    alert("Backend connection failed")
-
-  }
-
-  setLoading(false)
-}
+    setLoading(false);
+  };
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 24 }}>
+      {/* RESPONSIVE: auto-fit minmax 220px for mobile */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 24 }}>
         {fields.map(f => (
           <div key={f.key} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px" }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 8 }}>{f.label}</label>
@@ -228,12 +156,12 @@ const response = await fetch(
               <input
                 type="range" min={f.min} max={f.max} step={f.step} value={inputs[f.key]}
                 onChange={e => setInputs(p => ({ ...p, [f.key]: parseFloat(e.target.value) }))}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: 0 }}
               />
               <input
                 type="number" min={f.min} max={f.max} step={f.step} value={inputs[f.key]}
                 onChange={e => setInputs(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))}
-                style={{ width: 70, padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 13, fontWeight: 600, color: COLORS.navy, textAlign: "right" }}
+                style={{ width: 65, padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 13, fontWeight: 600, color: COLORS.navy, textAlign: "right" }}
               />
             </div>
           </div>
@@ -254,7 +182,7 @@ const response = await fetch(
             <div style={{ fontSize: 13, color: COLORS.steel, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Predicted Microstructure</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: result.cls.color, marginBottom: 4 }}>{result.cls.label}</div>
             <div style={{ fontSize: 14, color: COLORS.navy, marginBottom: 16 }}>{result.cls.full}</div>
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <span style={{ fontSize: 13, color: COLORS.steel }}>Model Confidence</span>
               <div style={{ background: "#e2e8f0", borderRadius: 999, height: 10, width: 160 }}>
                 <div style={{ width: `${result.confidence}%`, height: "100%", background: result.cls.color, borderRadius: 999, transition: "width 1s ease" }} />
@@ -285,7 +213,6 @@ function F1Chart() {
     if (!loaded) return;
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !window.Chart) return;
-
     new window.Chart(ctx, {
       type: "bar",
       data: {
@@ -333,7 +260,6 @@ function KNNChart() {
     if (!loaded) return;
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !window.Chart) return;
-
     new window.Chart(ctx, {
       type: "line",
       data: {
@@ -345,7 +271,7 @@ function KNNChart() {
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: "top" }, title: { display: true, text: "F1-Score vs Number of Neighbors (k)", color: "#1a2744", font: { size: 13, weight: 600 } }, annotation: {} },
+        plugins: { legend: { position: "top" }, title: { display: true, text: "F1-Score vs Number of Neighbors (k)", color: "#1a2744", font: { size: 13, weight: 600 } } },
         scales: {
           y: { beginAtZero: false, min: 60, max: 100, ticks: { callback: v => v + "%" }, grid: { color: "#f1f5f9" } },
           x: { title: { display: true, text: "k (Number of Neighbors)" } },
@@ -374,7 +300,6 @@ function DataDistChart() {
     if (!loaded) return;
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !window.Chart) return;
-
     new window.Chart(ctx, {
       type: "bar",
       data: {
@@ -451,40 +376,114 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: "#f8fafc", color: COLORS.navy, minHeight: "100vh" }}>
+    // RESPONSIVE: prevent horizontal overflow at root level
+    <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: "#f8fafc", color: COLORS.navy, minHeight: "100vh", overflowX: "hidden", maxWidth: "100vw" }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
         @keyframes shimmer { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
         * { box-sizing: border-box; }
-        body { margin: 0; }
+        body { margin: 0; overflow-x: hidden; }
         input[type=range] { accent-color: ${COLORS.navy}; }
         input[type=number] { outline: none; }
         input[type=number]:focus { border-color: ${COLORS.navy} !important; }
         section { scroll-margin-top: 70px; }
+        @media (max-width: 768px) {
+          h1 { font-size: 24px !important; }
+          h2 { font-size: 20px !important; }
+        }
+        /* Mobile nav menu */
+        .nav-mobile-menu {
+          display: none;
+          flex-direction: column;
+          gap: 4px;
+          position: absolute;
+          top: 60px;
+          left: 0;
+          right: 0;
+          background: ${COLORS.navy};
+          padding: 12px 16px;
+          z-index: 99;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .nav-mobile-menu.open { display: flex; }
+        .nav-mobile-btn {
+          background: transparent;
+          color: rgba(255,255,255,0.85);
+          border: none;
+          border-radius: 6px;
+          padding: 10px 14px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          text-align: left;
+          transition: all 0.2s;
+        }
+        .nav-mobile-btn.active {
+          background: ${COLORS.gold};
+          color: ${COLORS.navy};
+          font-weight: 700;
+        }
+        .hamburger-btn {
+          display: none;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 6px;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .hamburger-btn span {
+          display: block;
+          width: 22px;
+          height: 2px;
+          background: #fff;
+          border-radius: 2px;
+          transition: all 0.3s;
+        }
+        @media (max-width: 768px) {
+          .nav-desktop { display: none !important; }
+          .hamburger-btn { display: flex !important; }
+        }
       `}</style>
 
-      {/* NAVBAR */}
+      {/* NAVBAR — responsive with hamburger on mobile */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: COLORS.navy, boxShadow: "0 2px 20px rgba(0,0,0,0.2)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: COLORS.navy }}>NIT</div>
-            <span style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>Q&P Steel ML</span>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: COLORS.navy, flexShrink: 0 }}>NIT</div>
+            <span style={{ color: "#fff", fontWeight: 700, fontSize: 15, whiteSpace: "nowrap" }}>Q&P Steel ML</span>
           </div>
-          <div style={{ display: "flex", gap: 4 }}>
+
+          {/* Desktop nav */}
+          <div className="nav-desktop" style={{ display: "flex", gap: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {navItems.map(n => (
-              <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: activeNav === n.id ? COLORS.gold : "transparent", color: activeNav === n.id ? COLORS.navy : "rgba(255,255,255,0.75)", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: activeNav === n.id ? 700 : 400, cursor: "pointer", transition: "all 0.2s" }}>
+              <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: activeNav === n.id ? COLORS.gold : "transparent", color: activeNav === n.id ? COLORS.navy : "rgba(255,255,255,0.75)", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, fontWeight: activeNav === n.id ? 700 : 400, cursor: "pointer", transition: "all 0.2s" }}>
                 {n.label}
               </button>
             ))}
           </div>
+
+          {/* Hamburger button (mobile only) */}
+          <button className="hamburger-btn" onClick={() => setNavOpen(o => !o)} aria-label="Toggle menu">
+            <span /><span /><span />
+          </button>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        <div className={`nav-mobile-menu${navOpen ? " open" : ""}`}>
+          {navItems.map(n => (
+            <button key={n.id} className={`nav-mobile-btn${activeNav === n.id ? " active" : ""}`} onClick={() => scrollTo(n.id)}>
+              {n.label}
+            </button>
+          ))}
         </div>
       </nav>
 
-      {/* HERO */}
-      <section id="home" style={{ background: `linear-gradient(135deg, ${COLORS.navy} 0%, #2d3f6b 60%, #1e3a5f 100%)`, color: "#fff", padding: "80px 24px 90px", position: "relative", overflow: "hidden" }}>
+      {/* HERO — responsive padding and font */}
+      <section id="home" style={{ background: `linear-gradient(135deg, ${COLORS.navy} 0%, #2d3f6b 60%, #1e3a5f 100%)`, color: "#fff", padding: "60px 16px 70px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundImage: "radial-gradient(circle at 20% 80%, rgba(200,168,75,0.12) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(37,99,235,0.15) 0%, transparent 50%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
             <div style={{ background: COLORS.gold, color: COLORS.navy, padding: "4px 14px", borderRadius: 999, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>NIT JALANDHAR</div>
             <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>Department of Industrial and Production Engineering</div>
           </div>
@@ -495,7 +494,9 @@ export default function App() {
           <p style={{ fontSize: 17, color: "rgba(255,255,255,0.75)", maxWidth: 680, lineHeight: 1.7, marginBottom: 32 }}>
             A machine learning model that classifies Quenched & Partitioned steel microstructure types from compositional and heat-treatment features — trained on 348 Q&P steel samples from 107 research articles spanning 20 years.
           </p>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+
+          {/* RESPONSIVE: flex-wrap stats */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {[
               { val: "97.7%", label: "Training F1-Score" },
               { val: "77.7%", label: "Testing F1-Score" },
@@ -503,12 +504,13 @@ export default function App() {
               { val: "6", label: "Microstructure Classes" },
               { val: "k=5", label: "Optimal Neighbors" },
             ].map(stat => (
-              <div key={stat.label} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "16px 22px", textAlign: "center", backdropFilter: "blur(8px)" }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: COLORS.gold }}>{stat.val}</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{stat.label}</div>
+              <div key={stat.label} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "12px 16px", textAlign: "center", backdropFilter: "blur(8px)", minWidth: 100, flex: "1 1 auto" }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: COLORS.gold }}>{stat.val}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{stat.label}</div>
               </div>
             ))}
           </div>
+
           <div style={{ marginTop: 32 }}>
             <button onClick={() => scrollTo("prediction")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 10, padding: "14px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
               Try the Predictor →
@@ -517,7 +519,8 @@ export default function App() {
         </div>
       </section>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+      {/* MAIN CONTENT — responsive padding */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
 
         {/* PREDICTION */}
         <section id="prediction" style={{ padding: "60px 0" }}>
@@ -532,26 +535,27 @@ export default function App() {
         {/* MODEL PERFORMANCE */}
         <section id="performance" style={{ padding: "60px 0" }}>
           <SectionTitle sub="Detailed evaluation metrics of the k-NN classifier on the test dataset (263 samples)">
-             Model Performance
+            Model Performance
           </SectionTitle>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 16, marginBottom: 32 }}>
+          {/* RESPONSIVE: auto-fit stat cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 16, marginBottom: 32 }}>
             {[
-              { val: "97.7%", label: "Training F1", color: COLORS.accent,  },
-              { val: "77.7%", label: "Test F1-Score", color: COLORS.success, },
-              { val: "78%", label: "Test Accuracy", color: "#7c3aed", },
-              { val: "0.51", label: "Lowest F1 (M,RA)", color: COLORS.danger, },
-              { val: "0.89", label: "Best F1 (M,F,RA,C)", color: COLORS.success, },
+              { val: "97.7%", label: "Training F1", color: COLORS.accent },
+              { val: "77.7%", label: "Test F1-Score", color: COLORS.success },
+              { val: "78%", label: "Test Accuracy", color: "#7c3aed" },
+              { val: "0.51", label: "Lowest F1 (M,RA)", color: COLORS.danger },
+              { val: "0.89", label: "Best F1 (M,F,RA,C)", color: COLORS.success },
             ].map(s => (
               <div key={s.label} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 18px", textAlign: "center" }}>
-                <div style={{ fontSize: 22 }}>{s.icon}</div>
                 <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 4 }}>{s.val}</div>
                 <div style={{ fontSize: 12, color: COLORS.steel, marginTop: 2 }}>{s.label}</div>
               </div>
             ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+          {/* RESPONSIVE: 2-col on desktop, 1-col on mobile */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, marginBottom: 24 }}>
             <Card>
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: COLORS.navy }}>Per-Class Metrics</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -572,86 +576,22 @@ export default function App() {
             </Card>
           </div>
 
-   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24, marginTop: 30 }}>
-
-  {/* Histogram Plot */}
-  <Card>
-    <h3
-      style={{
-        margin: "0 0 18px",
-        fontSize: 16,
-        fontWeight: 700,
-        color: COLORS.navy
-      }}
-    >
-      Feature Distribution Histograms
-    </h3>
-
-    <img
-      src="/histogram.png"
-      alt="Feature Histograms"
-      style={{
-        width: "100%",
-        borderRadius: 12,
-        border: "1px solid #e2e8f0",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
-      }}
-    />
-
-    <p
-      style={{
-        fontSize: 13,
-        color: COLORS.steel,
-        lineHeight: 1.7,
-        marginTop: 14
-      }}
-    >
-      Histogram plots showing the statistical distribution of all input
-      features including composition parameters and heat treatment
-      temperatures used in the k-NN classification model.
-    </p>
-  </Card>
-
-  {/* Confusion Matrix Figure */}
-  <Card>
-    <h3
-      style={{
-        margin: "0 0 18px",
-        fontSize: 16,
-        fontWeight: 700,
-        color: COLORS.navy
-      }}
-    >
-      Confusion Matrix Visualization
-    </h3>
-
-    <img
-      src="/confusion_matrix.png"
-      alt="Confusion Matrix"
-      style={{
-        width: "100%",
-        borderRadius: 12,
-        border: "1px solid #e2e8f0",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
-      }}
-    />
-
-    <p
-      style={{
-        fontSize: 13,
-        color: COLORS.steel,
-        lineHeight: 1.7,
-        marginTop: 14
-      }}
-    >
-      Training and testing confusion matrices of the k-NN classifier.
-      Strong diagonal dominance indicates good prediction capability,
-      while off-diagonal values represent class misclassification.
-    </p>
-  </Card>
-
-</div>
-         
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24, marginTop: 30 }}>
+            <Card>
+              <h3 style={{ margin: "0 0 18px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>Feature Distribution Histograms</h3>
+              <img src="/histogram.png" alt="Feature Histograms" style={{ width: "100%", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }} />
+              <p style={{ fontSize: 13, color: COLORS.steel, lineHeight: 1.7, marginTop: 14 }}>
+                Histogram plots showing the statistical distribution of all input features including composition parameters and heat treatment temperatures used in the k-NN classification model.
+              </p>
+            </Card>
+            <Card>
+              <h3 style={{ margin: "0 0 18px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>Confusion Matrix Visualization</h3>
+              <img src="/confusion_matrix.png" alt="Confusion Matrix" style={{ width: "100%", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }} />
+              <p style={{ fontSize: 13, color: COLORS.steel, lineHeight: 1.7, marginTop: 14 }}>
+                Training and testing confusion matrices of the k-NN classifier. Strong diagonal dominance indicates good prediction capability, while off-diagonal values represent class misclassification.
+              </p>
+            </Card>
+          </div>
         </section>
 
         {/* HOW IT WORKS */}
@@ -664,58 +604,50 @@ export default function App() {
             {[
               {
                 step: "01", title: "Data Collection & Compilation",
-                
                 desc: "A comprehensive dataset was compiled from ~107 published research articles covering ~400 Q&P steel microstructures over the last 20 years. Each record includes the steel chemical composition, Q&P heat treatment parameters, and the labeled microstructure type. After cleaning for inconsistencies and ambiguities, a final dataset of 348 × 16 was obtained.",
                 detail: "Features: C, Si, Mn, Nb, V, Ti (wt.%) + critical temps (Ac₁, Ac₃, Mₛ) + process params (QT, PT)"
               },
               {
                 step: "02", title: "Feature Engineering",
-               
                 desc: "Microalloying elements Nb, V, and Ti were individually sparse across the dataset, making them unreliable as separate features. They were aggregated into a single 'Total Microalloying Element' (TMAE) feature = Nb + V + Ti (wt.%). This reduced the feature space to 9 dimensions while preserving microalloying effects.",
                 detail: "Final feature vector: [C, Si, Mn, TMAE, Ac₁, Ac₃, Mₛ, QT, PT]"
               },
               {
                 step: "03", title: "Data Pre-processing",
-                
                 desc: "Two key preprocessing steps were applied: (1) Standard scaling (zero-mean normalization) was applied to handle the wide numerical range from wt.% fractions to temperatures in hundreds of °C. (2) SMOTE (Synthetic Minority Oversampling Technique) was used to address severe class imbalance — some microstructure types had fewer than 15 examples versus 146 for the majority class.",
                 detail: "After SMOTE: all 6 classes balanced to 146 samples each"
               },
               {
                 step: "04", title: "k-NN Model Training",
-              
                 desc: "The k-Nearest Neighbor algorithm was chosen for its strength in multiclass classification on moderate-sized datasets. The optimal k=5 was determined via grid search. Final hyperparameters: n_neighbors=5, weights='distance', algorithm='ball_tree', leaf_size=20, p=2 (Euclidean distance). The dataset was split 70/30 for training and testing.",
                 detail: "Algorithm: scikit-learn KNeighborsClassifier | Train: 70% | Test: 30%"
               },
               {
                 step: "05", title: "Model Evaluation",
-               
                 desc: "Model performance was measured using precision, recall, and weighted F1-score for each of the 6 microstructure classes. Overall test F1-score: 77.7%. The {M, RA} class was the most challenging (F1=0.51) due to the metallurgical difficulty of obtaining pure martensite + retained austenite without other phases.",
                 detail: "Best class: {M,F,RA,C} F1=0.89 | Hardest class: {M,RA} F1=0.51"
               },
               {
                 step: "06", title: "Re-Engineering & Experimental Validation",
-               
                 desc: "The trained model was used inversely for re-engineering: a synthetic compositional space was explored to identify the parameter window producing the target {M, RA} microstructure. The predicted window (C≈0.68%, Si≈2.2%, Mn≈1.72%, QT≈PT≈200°C) was validated by manufacturing the HC9 steel at Tata Steel, Jamshedpur and conducting Q&P heat treatments. Optical and SEM micrographs confirmed the model's predictions.",
                 detail: "Validated steel: C=0.68, Mn=1.72, Si=2.20, Nb=0.036 wt.% — Q&P at 200°C"
               },
             ].map((s, i) => (
-              <div key={s.step} style={{ display: "flex", gap: 20, animation: `fadeIn 0.5s ease ${i * 0.1}s both` }}>
-                <div style={{ flexShrink: 0, width: 64, height: 64, borderRadius: 16, background: COLORS.navy, color: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15 }}>
+              <div key={s.step} style={{ display: "flex", gap: 16, animation: `fadeIn 0.5s ease ${i * 0.1}s both`, alignItems: "flex-start" }}>
+                {/* RESPONSIVE: smaller icon on mobile via flex-shrink */}
+                <div style={{ flexShrink: 0, width: 56, height: 56, borderRadius: 14, background: COLORS.navy, color: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13 }}>
                   {s.step}
                 </div>
                 <Card style={{ flex: 1, margin: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                    <span style={{ fontSize: 22 }}>{s.icon}</span>
-                    <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: COLORS.navy }}>{s.title}</h3>
-                  </div>
+                  <h3 style={{ margin: "0 0 10px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>{s.title}</h3>
                   <p style={{ margin: "0 0 10px", color: COLORS.steel, fontSize: 14, lineHeight: 1.7 }}>{s.desc}</p>
-                  <div style={{ background: COLORS.light, borderRadius: 8, padding: "8px 14px", fontSize: 12, fontFamily: "monospace", color: "#334155" }}>📌 {s.detail}</div>
+                  <div style={{ background: COLORS.light, borderRadius: 8, padding: "8px 14px", fontSize: 12, fontFamily: "monospace", color: "#334155", wordBreak: "break-word" }}>📌 {s.detail}</div>
                 </Card>
               </div>
             ))}
           </div>
 
-          {/* Architecture diagram */}
+          {/* ML Pipeline Overview — wraps on mobile */}
           <Card>
             <h3 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 700, color: COLORS.navy }}>ML Pipeline Overview</h3>
             <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", justifyContent: "center" }}>
@@ -727,11 +659,11 @@ export default function App() {
                 { label: "Prediction\n6 Classes", color: "#fee2e2", border: "#fca5a5", text: "#7f1d1d" },
                 { label: "Re-engineering\n& Validation", color: "#f0fdf4", border: "#86efac", text: "#14532d" },
               ].map((s, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                  <div style={{ background: s.color, border: `2px solid ${s.border}`, borderRadius: 12, padding: "12px 18px", textAlign: "center", minWidth: 100, fontSize: 12, fontWeight: 600, color: s.text, whiteSpace: "pre-line", lineHeight: 1.4 }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+                  <div style={{ background: s.color, border: `2px solid ${s.border}`, borderRadius: 12, padding: "10px 14px", textAlign: "center", minWidth: 88, fontSize: 11, fontWeight: 600, color: s.text, whiteSpace: "pre-line", lineHeight: 1.4 }}>
                     {s.label}
                   </div>
-                  {i < 5 && <div style={{ color: COLORS.steel, fontSize: 20, margin: "0 2px" }}>→</div>}
+                  {i < 5 && <div style={{ color: COLORS.steel, fontSize: 18, margin: "0 1px" }}>→</div>}
                 </div>
               ))}
             </div>
@@ -741,17 +673,16 @@ export default function App() {
         {/* TEAM */}
         <section id="students" style={{ padding: "60px 0" }}>
           <SectionTitle sub="Research team behind this project">
-             Project Team
+            Project Team
           </SectionTitle>
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.steel, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Project Students</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px,1fr))", gap: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 20 }}>
               {[
-                { name: "ADITYA KUMAR YADAV ", roll_no: "23113006", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING " },
-                { name: "VIRAJ SINGH", roll_no: "23113076", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING " },
-                { name: "VISHAL MISHRA", roll_no: "23113077", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING " },
-               
+                { name: "ADITYA KUMAR YADAV", roll_no: "23113006", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING" },
+                { name: "VIRAJ SINGH", roll_no: "23113076", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING" },
+                { name: "VISHAL MISHRA", roll_no: "23113077", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING" },
               ].map(s => (
                 <Card key={s.name}>
                   <div style={{ width: 48, height: 48, borderRadius: "50%", background: COLORS.navy, color: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, marginBottom: 12 }}>
@@ -759,7 +690,7 @@ export default function App() {
                   </div>
                   <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.navy }}>{s.name}</div>
                   <div style={{ fontSize: 12, color: COLORS.steel, margin: "4px 0 8px" }}>{s.inst}</div>
-                  <div style={{ fontSize: 11,fontWeight: "bold", color: "#475569", lineHeight: 1.5 }}>{s.roll_no}</div>
+                  <div style={{ fontSize: 11, fontWeight: "bold", color: "#475569", lineHeight: 1.5 }}>{s.roll_no}</div>
                 </Card>
               ))}
             </div>
@@ -768,19 +699,18 @@ export default function App() {
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.steel, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Project Mentor</h3>
             <Card style={{ maxWidth: 480 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ width: 64, height: 64, borderRadius: "50%", background: COLORS.gold, color: COLORS.navy, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 22 }}>AV</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ width: 64, height: 64, borderRadius: "50%", background: COLORS.gold, color: COLORS.navy, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 22, flexShrink: 0 }}>AV</div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: 17, color: COLORS.navy }}>Dr Aviral Mishra</div>
-                  <div style={{ fontSize: 13, color: COLORS.steel, marginTop: 2 }}>Department of Industrial and Production Engineeringg</div>
+                  <div style={{ fontSize: 13, color: COLORS.steel, marginTop: 2 }}>Department of Industrial and Production Engineering</div>
                   <div style={{ fontSize: 13, color: COLORS.steel }}>Dr B R Ambedkar National Institute of Technology Jalandhar</div>
                   <div style={{ fontSize: 12, color: COLORS.accent, marginTop: 4 }}>mishraa@nitj.ac.in</div>
                 </div>
               </div>
               <div style={{ borderTop: "1px solid #e2e8f0", marginTop: 16, paddingTop: 14 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.steel, marginBottom: 6 }}>Contributions</div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>Conceptualization · Methodology · Supervision · Resources · Writing – review & editing · Project Administration </div>
-                
+                <div style={{ fontSize: 12, color: "#64748b" }}>Conceptualization · Methodology · Supervision · Resources · Writing – review & editing · Project Administration</div>
               </div>
             </Card>
           </div>
@@ -792,14 +722,15 @@ export default function App() {
             📄 Documentation
           </SectionTitle>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+          {/* RESPONSIVE: auto-fit 2-col → 1-col */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 24, marginBottom: 24 }}>
             <Card>
               <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>📰 Primary Research Paper</h3>
               <div style={{ background: COLORS.light, borderRadius: 10, padding: 16, marginBottom: 14 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, color: COLORS.navy, marginBottom: 6 }}>A machine learning model for multi-class classification of quenched and partitioned steel microstructure type by the k-nearest neighbor algorithm</div>
                 <div style={{ fontSize: 12, color: COLORS.steel }}>Ashutosh Kumar Gupta, Sunny Chakroborty, Swarup Kumar Ghosh, Subhas Ganguly</div>
                 <div style={{ fontSize: 12, color: COLORS.accent, marginTop: 4 }}>Computational Materials Science 228 (2023) 112321 · Elsevier</div>
-                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>https://doi.org/10.1016/j.commatsci.2023.112321</div>
+                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2, wordBreak: "break-all" }}>https://doi.org/10.1016/j.commatsci.2023.112321</div>
               </div>
               <div style={{ fontSize: 13, color: COLORS.steel, lineHeight: 1.7 }}>Data and Python code available on Mendeley Data, V1 at https://doi.org/10.17632/gy7kcvf98b.1</div>
             </Card>
@@ -816,9 +747,9 @@ export default function App() {
                 { label: "Balancing technique", value: "SMOTE oversampling (→ 146 per class)" },
                 { label: "Scaling method", value: "Zero-mean standardization (z-score)" },
               ].map(r => (
-                <div key={r.label} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #f1f5f9", fontSize: 13 }}>
-                  <span style={{ color: COLORS.steel }}>{r.label}</span>
-                  <span style={{ fontWeight: 600, color: COLORS.navy, maxWidth: "55%", textAlign: "right" }}>{r.value}</span>
+                <div key={r.label} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #f1f5f9", fontSize: 13, gap: 8 }}>
+                  <span style={{ color: COLORS.steel, flexShrink: 0 }}>{r.label}</span>
+                  <span style={{ fontWeight: 600, color: COLORS.navy, textAlign: "right" }}>{r.value}</span>
                 </div>
               ))}
             </Card>
@@ -826,7 +757,7 @@ export default function App() {
 
           <Card style={{ marginBottom: 24 }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>🔑 Key Supporting References</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))", gap: 14 }}>
               {[
                 { cite: "[1]", title: "Modelling steel microstructure knowledge for in-silico recognition using ML", authors: "Gupta et al.", journal: "Mater. Chem. Phys. 252 (2020)" },
                 { cite: "[9]", title: "Image driven ML methods for microstructure recognition", authors: "Chowdhury et al.", journal: "Comput. Mater. Sci. 123 (2016)" },
@@ -845,7 +776,7 @@ export default function App() {
           </Card>
 
           <Card>
-            <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}> Technical Stack</h3>
+            <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>Technical Stack</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               {["Python 3", "scikit-learn", "pandas", "NumPy", "matplotlib", "imbalanced-learn (SMOTE)", "Jupyter Notebook", "k-NN Classifier", "Ball-Tree Algorithm", "SMOTE Oversampling", "Z-score Normalization", "Confusion Matrix Eval"].map(t => (
                 <span key={t} style={{ background: "#e0f2fe", color: "#0c4a6e", border: "1px solid #bae6fd", borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>{t}</span>
@@ -856,17 +787,12 @@ export default function App() {
 
       </div>
 
-
-
-
       {/* FOOTER */}
-      <footer style={{ background: COLORS.navy, color: "rgba(255,255,255,0.6)", padding: "40px 24px", marginTop: 60, textAlign: "center" }}>
+      <footer style={{ background: COLORS.navy, color: "rgba(255,255,255,0.6)", padding: "40px 16px", marginTop: 60, textAlign: "center" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 6 }}>Dr. B.R. Ambedkar National Institute of Technology, Jalandhar</div>
           <div style={{ fontSize: 13, marginBottom: 4 }}>Department of Industrial and Production Engineering</div>
           <div style={{ fontSize: 13, marginBottom: 16 }}>Jalandhar — 144011, Punjab, India</div>
-         
-         
         </div>
       </footer>
     </div>
