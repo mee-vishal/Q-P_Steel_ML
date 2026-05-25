@@ -284,6 +284,30 @@ function RecommendedRanges() {
     }
   };
 
+  const units = {
+    C: "wt.%",
+    Si: "wt.%",
+    Mn: "wt.%",
+    TMAE: "wt.%",
+    Ac1: "°C",
+    Ac3: "°C",
+    Ms: "°C",
+    QT: "°C",
+    PT: "°C"
+  };
+
+  const labels = {
+    C: "Carbon",
+    Si: "Silicon",
+    Mn: "Manganese",
+    TMAE: "Micro-alloy",
+    Ac1: "Lower Critical Temp",
+    Ac3: "Upper Critical Temp",
+    Ms: "Martensite Start Temp",
+    QT: "Quenching Temp",
+    PT: "Partitioning Temp"
+  };
+
   const current = ranges[selected];
 
   return (
@@ -355,8 +379,8 @@ function RecommendedRanges() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))",
-          gap: 14
+          gridTemplateColumns: "repeat(auto-fit, minmax(210px,1fr))",
+          gap: 16
         }}
       >
         {Object.entries(current).map(([key, value]) => (
@@ -365,24 +389,39 @@ function RecommendedRanges() {
             style={{
               background: "#f8fafc",
               border: "1px solid #e2e8f0",
-              borderRadius: 10,
-              padding: 14
+              borderRadius: 12,
+              padding: 16,
+              transition: "0.2s",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
             }}
           >
             <div
               style={{
-                fontSize: 12,
+                fontSize: 11,
                 color: COLORS.steel,
                 marginBottom: 6,
-                fontWeight: 600
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: 0.5
               }}
             >
-              {key}
+              {labels[key]}
             </div>
 
             <div
               style={{
-                fontSize: 15,
+                fontSize: 13,
+                color: "#94a3b8",
+                marginBottom: 10,
+                fontWeight: 600
+              }}
+            >
+              {key} ({units[key]})
+            </div>
+
+            <div
+              style={{
+                fontSize: 18,
                 fontWeight: 800,
                 color: COLORS.navy
               }}
@@ -395,6 +434,7 @@ function RecommendedRanges() {
     </div>
   );
 }
+
 
 
 
