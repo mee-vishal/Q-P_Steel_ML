@@ -205,6 +205,200 @@ function PredictionTool() {
   );
 }
 
+
+function RecommendedRanges() {
+
+  const [selected, setSelected] = useState("M, RA, C");
+
+  const ranges = {
+    "M, B, RA": {
+      C: "0.03 – 0.60",
+      Si: "0.20 – 2.50",
+      Mn: "0.50 – 3.00",
+      TMAE: "0.00 – 0.08",
+      Ac1: "710 – 760",
+      Ac3: "780 – 900",
+      Ms: "250 – 450",
+      QT: "100 – 350",
+      PT: "250 – 450"
+    },
+
+    "M, F, B, RA": {
+      C: "0.05 – 0.45",
+      Si: "0.80 – 2.20",
+      Mn: "1.00 – 2.80",
+      TMAE: "0.00 – 0.06",
+      Ac1: "720 – 760",
+      Ac3: "800 – 890",
+      Ms: "280 – 430",
+      QT: "150 – 350",
+      PT: "300 – 500"
+    },
+
+    "M, F, RA": {
+      C: "0.10 – 0.55",
+      Si: "0.50 – 2.00",
+      Mn: "1.00 – 3.20",
+      TMAE: "0.00 – 0.08",
+      Ac1: "710 – 760",
+      Ac3: "780 – 880",
+      Ms: "220 – 420",
+      QT: "150 – 400",
+      PT: "300 – 500"
+    },
+
+    "M, F, RA, C": {
+      C: "0.20 – 0.80",
+      Si: "0.80 – 2.50",
+      Mn: "1.50 – 4.00",
+      TMAE: "0.00 – 0.10",
+      Ac1: "700 – 760",
+      Ac3: "760 – 870",
+      Ms: "180 – 380",
+      QT: "200 – 450",
+      PT: "350 – 550"
+    },
+
+    "M, RA": {
+      C: "0.60 – 0.90",
+      Si: "1.50 – 2.50",
+      Mn: "1.20 – 2.20",
+      TMAE: "0.00 – 0.05",
+      Ac1: "720 – 760",
+      Ac3: "820 – 900",
+      Ms: "180 – 320",
+      QT: "150 – 250",
+      PT: "150 – 250"
+    },
+
+    "M, RA, C": {
+      C: "0.18 – 1.08",
+      Si: "0.20 – 2.60",
+      Mn: "0.24 – 6.00",
+      TMAE: "0.00 – 0.10",
+      Ac1: "693 – 773",
+      Ac3: "703 – 917",
+      Ms: "120 – 454",
+      QT: "10 – 550",
+      PT: "150 – 650"
+    }
+  };
+
+  const current = ranges[selected];
+
+  return (
+    <div
+      style={{
+        marginTop: 28,
+        background: "#fff",
+        border: "1px solid #e2e8f0",
+        borderRadius: 14,
+        padding: 24,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 14,
+          marginBottom: 20
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 800,
+              color: COLORS.navy
+            }}
+          >
+            Reverse Microstructure Design
+          </div>
+
+          <div
+            style={{
+              fontSize: 13,
+              color: COLORS.steel,
+              marginTop: 4
+            }}
+          >
+            Select a target microstructure to view recommended parameter ranges
+          </div>
+        </div>
+
+        <select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: "1px solid #cbd5e1",
+            fontSize: 14,
+            fontWeight: 700,
+            color: COLORS.navy,
+            background: "#f8fafc",
+            outline: "none",
+            cursor: "pointer"
+          }}
+        >
+          {Object.keys(ranges).map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))",
+          gap: 14
+        }}
+      >
+        {Object.entries(current).map(([key, value]) => (
+          <div
+            key={key}
+            style={{
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: 10,
+              padding: 14
+            }}
+          >
+            <div
+              style={{
+                fontSize: 12,
+                color: COLORS.steel,
+                marginBottom: 6,
+                fontWeight: 600
+              }}
+            >
+              {key}
+            </div>
+
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 800,
+                color: COLORS.navy
+              }}
+            >
+              {value}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
+
 function F1Chart() {
   const canvasRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
@@ -523,14 +717,21 @@ export default function App() {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
 
         {/* PREDICTION */}
-        <section id="prediction" style={{ padding: "60px 0" }}>
-          <SectionTitle sub="Input your steel composition and heat treatment parameters to predict the resulting microstructure type">
-            🔬 Microstructure Predictor
-          </SectionTitle>
-          <Card>
-            <PredictionTool />
-          </Card>
-        </section>
+      ```jsx
+<section id="prediction" style={{ padding: "60px 0" }}>
+  <SectionTitle sub="Input your steel composition and heat treatment parameters to predict the resulting microstructure type">
+    🔬 Microstructure Predictor
+  </SectionTitle>
+
+  <Card>
+    <PredictionTool />
+
+    {/* ADD THIS */}
+    <RecommendedRanges />
+  </Card>
+</section>
+```
+
 
         {/* MODEL PERFORMANCE */}
         <section id="performance" style={{ padding: "60px 0" }}>
