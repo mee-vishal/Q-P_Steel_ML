@@ -532,16 +532,16 @@ export default function App() {
         {/* MODEL PERFORMANCE */}
         <section id="performance" style={{ padding: "60px 0" }}>
           <SectionTitle sub="Detailed evaluation metrics of the k-NN classifier on the test dataset (263 samples)">
-            📊 Model Performance
+             Model Performance
           </SectionTitle>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 16, marginBottom: 32 }}>
             {[
-              { val: "97.7%", label: "Training F1", color: COLORS.accent, icon: "🏋️" },
-              { val: "77.7%", label: "Test F1-Score", color: COLORS.success, icon: "✅" },
-              { val: "78%", label: "Test Accuracy", color: "#7c3aed", icon: "🎯" },
-              { val: "0.51", label: "Lowest F1 (M,RA)", color: COLORS.danger, icon: "⚠️" },
-              { val: "0.89", label: "Best F1 (M,F,RA,C)", color: COLORS.success, icon: "🏆" },
+              { val: "97.7%", label: "Training F1", color: COLORS.accent,  },
+              { val: "77.7%", label: "Test F1-Score", color: COLORS.success, },
+              { val: "78%", label: "Test Accuracy", color: "#7c3aed", },
+              { val: "0.51", label: "Lowest F1 (M,RA)", color: COLORS.danger, },
+              { val: "0.89", label: "Best F1 (M,F,RA,C)", color: COLORS.success, },
             ].map(s => (
               <div key={s.label} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 22 }}>{s.icon}</div>
@@ -572,61 +572,129 @@ export default function App() {
             </Card>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-            <Card>
-              <F1Chart />
-            </Card>
-            <Card>
-              <KNNChart />
-            </Card>
-          </div>
+   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24, marginTop: 30 }}>
 
-          <Card style={{ marginTop: 24 }}>
-            <DataDistChart />
-          </Card>
+  {/* Histogram Plot */}
+  <Card>
+    <h3
+      style={{
+        margin: "0 0 18px",
+        fontSize: 16,
+        fontWeight: 700,
+        color: COLORS.navy
+      }}
+    >
+      Feature Distribution Histograms
+    </h3>
+
+    <img
+      src="/histogram.png"
+      alt="Feature Histograms"
+      style={{
+        width: "100%",
+        borderRadius: 12,
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
+      }}
+    />
+
+    <p
+      style={{
+        fontSize: 13,
+        color: COLORS.steel,
+        lineHeight: 1.7,
+        marginTop: 14
+      }}
+    >
+      Histogram plots showing the statistical distribution of all input
+      features including composition parameters and heat treatment
+      temperatures used in the k-NN classification model.
+    </p>
+  </Card>
+
+  {/* Confusion Matrix Figure */}
+  <Card>
+    <h3
+      style={{
+        margin: "0 0 18px",
+        fontSize: 16,
+        fontWeight: 700,
+        color: COLORS.navy
+      }}
+    >
+      Confusion Matrix Visualization
+    </h3>
+
+    <img
+      src="/confusion_matrix.png"
+      alt="Confusion Matrix"
+      style={{
+        width: "100%",
+        borderRadius: 12,
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
+      }}
+    />
+
+    <p
+      style={{
+        fontSize: 13,
+        color: COLORS.steel,
+        lineHeight: 1.7,
+        marginTop: 14
+      }}
+    >
+      Training and testing confusion matrices of the k-NN classifier.
+      Strong diagonal dominance indicates good prediction capability,
+      while off-diagonal values represent class misclassification.
+    </p>
+  </Card>
+
+</div>
+         
         </section>
 
         {/* HOW IT WORKS */}
         <section id="pipeline" style={{ padding: "60px 0" }}>
           <SectionTitle sub="End-to-end explanation of the machine learning pipeline">
-            ⚙️ How the Project Works
+            How the Project Works
           </SectionTitle>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 40 }}>
             {[
               {
                 step: "01", title: "Data Collection & Compilation",
-                icon: "📚",
+                
                 desc: "A comprehensive dataset was compiled from ~107 published research articles covering ~400 Q&P steel microstructures over the last 20 years. Each record includes the steel chemical composition, Q&P heat treatment parameters, and the labeled microstructure type. After cleaning for inconsistencies and ambiguities, a final dataset of 348 × 16 was obtained.",
                 detail: "Features: C, Si, Mn, Nb, V, Ti (wt.%) + critical temps (Ac₁, Ac₃, Mₛ) + process params (QT, PT)"
               },
               {
                 step: "02", title: "Feature Engineering",
-                icon: "🔧",
+               
                 desc: "Microalloying elements Nb, V, and Ti were individually sparse across the dataset, making them unreliable as separate features. They were aggregated into a single 'Total Microalloying Element' (TMAE) feature = Nb + V + Ti (wt.%). This reduced the feature space to 9 dimensions while preserving microalloying effects.",
                 detail: "Final feature vector: [C, Si, Mn, TMAE, Ac₁, Ac₃, Mₛ, QT, PT]"
               },
               {
                 step: "03", title: "Data Pre-processing",
-                icon: "⚖️",
+                
                 desc: "Two key preprocessing steps were applied: (1) Standard scaling (zero-mean normalization) was applied to handle the wide numerical range from wt.% fractions to temperatures in hundreds of °C. (2) SMOTE (Synthetic Minority Oversampling Technique) was used to address severe class imbalance — some microstructure types had fewer than 15 examples versus 146 for the majority class.",
                 detail: "After SMOTE: all 6 classes balanced to 146 samples each"
               },
               {
                 step: "04", title: "k-NN Model Training",
-                icon: "🤖",
+              
                 desc: "The k-Nearest Neighbor algorithm was chosen for its strength in multiclass classification on moderate-sized datasets. The optimal k=5 was determined via grid search. Final hyperparameters: n_neighbors=5, weights='distance', algorithm='ball_tree', leaf_size=20, p=2 (Euclidean distance). The dataset was split 70/30 for training and testing.",
                 detail: "Algorithm: scikit-learn KNeighborsClassifier | Train: 70% | Test: 30%"
               },
               {
                 step: "05", title: "Model Evaluation",
-                icon: "📊",
+               
                 desc: "Model performance was measured using precision, recall, and weighted F1-score for each of the 6 microstructure classes. Overall test F1-score: 77.7%. The {M, RA} class was the most challenging (F1=0.51) due to the metallurgical difficulty of obtaining pure martensite + retained austenite without other phases.",
                 detail: "Best class: {M,F,RA,C} F1=0.89 | Hardest class: {M,RA} F1=0.51"
               },
               {
                 step: "06", title: "Re-Engineering & Experimental Validation",
-                icon: "🔬",
+               
                 desc: "The trained model was used inversely for re-engineering: a synthetic compositional space was explored to identify the parameter window producing the target {M, RA} microstructure. The predicted window (C≈0.68%, Si≈2.2%, Mn≈1.72%, QT≈PT≈200°C) was validated by manufacturing the HC9 steel at Tata Steel, Jamshedpur and conducting Q&P heat treatments. Optical and SEM micrographs confirmed the model's predictions.",
                 detail: "Validated steel: C=0.68, Mn=1.72, Si=2.20, Nb=0.036 wt.% — Q&P at 200°C"
               },
@@ -673,16 +741,17 @@ export default function App() {
         {/* TEAM */}
         <section id="students" style={{ padding: "60px 0" }}>
           <SectionTitle sub="Research team behind this project">
-            👩‍🔬 Project Team
+             Project Team
           </SectionTitle>
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.steel, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Project Students</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px,1fr))", gap: 20 }}>
               {[
-                { name: "Ashutosh Kumar Gupta", role: "Software, Formal Analysis, Data Curation, Methodology, Visualization, Writing", inst: "NIT Raipur" },
-                { name: "Sunny Chakroborty", role: "Data Curation, Investigation, Formal Analysis, Writing", inst: "IIEST Shibpur" },
-                { name: "Swarup Kumar Ghosh", role: "Investigation, Supervision, Validation", inst: "IIEST Shibpur" },
+                { name: "ADITYA KUMAR YADAV ", roll_no: "23113006", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING " },
+                { name: "VIRAJ SINGH", roll_no: "23113076", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING " },
+                { name: "VISHAL MISHRA", roll_no: "23113077", inst: "INDUSTRIAL AND PRODUCTION ENGINEERING " },
+               
               ].map(s => (
                 <Card key={s.name}>
                   <div style={{ width: 48, height: 48, borderRadius: "50%", background: COLORS.navy, color: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, marginBottom: 12 }}>
@@ -690,30 +759,28 @@ export default function App() {
                   </div>
                   <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.navy }}>{s.name}</div>
                   <div style={{ fontSize: 12, color: COLORS.steel, margin: "4px 0 8px" }}>{s.inst}</div>
-                  <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.5 }}>{s.role}</div>
+                  <div style={{ fontSize: 11,fontWeight: "bold", color: "#475569", lineHeight: 1.5 }}>{s.roll_no}</div>
                 </Card>
               ))}
             </div>
           </div>
 
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.steel, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Project Mentor / Principal Investigator</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.steel, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Project Mentor</h3>
             <Card style={{ maxWidth: 480 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ width: 64, height: 64, borderRadius: "50%", background: COLORS.gold, color: COLORS.navy, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 22 }}>SG</div>
+                <div style={{ width: 64, height: 64, borderRadius: "50%", background: COLORS.gold, color: COLORS.navy, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 22 }}>AV</div>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: COLORS.navy }}>Prof. Subhas Ganguly</div>
-                  <div style={{ fontSize: 13, color: COLORS.steel, marginTop: 2 }}>Dept. of Metallurgical & Materials Engineering</div>
-                  <div style={{ fontSize: 13, color: COLORS.steel }}>NIT Raipur — 492010, India</div>
-                  <div style={{ fontSize: 12, color: COLORS.accent, marginTop: 4 }}>sganguly.mme@nitrr.ac.in</div>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: COLORS.navy }}>Dr Aviral Mishra</div>
+                  <div style={{ fontSize: 13, color: COLORS.steel, marginTop: 2 }}>Department of Industrial and Production Engineeringg</div>
+                  <div style={{ fontSize: 13, color: COLORS.steel }}>Dr B R Ambedkar National Institute of Technology Jalandhar</div>
+                  <div style={{ fontSize: 12, color: COLORS.accent, marginTop: 4 }}>mishraa@nitj.ac.in</div>
                 </div>
               </div>
               <div style={{ borderTop: "1px solid #e2e8f0", marginTop: 16, paddingTop: 14 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.steel, marginBottom: 6 }}>Contributions</div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>Conceptualization · Methodology · Supervision · Resources · Writing – review & editing · Project Administration · Funding Acquisition</div>
-                <div style={{ marginTop: 10, background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#78350f" }}>
-                  💰 Funded by DST-SERB Core Research Grant — CRG/2021/005256
-                </div>
+                <div style={{ fontSize: 12, color: "#64748b" }}>Conceptualization · Methodology · Supervision · Resources · Writing – review & editing · Project Administration </div>
+                
               </div>
             </Card>
           </div>
@@ -778,7 +845,7 @@ export default function App() {
           </Card>
 
           <Card>
-            <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>🛠️ Technical Stack</h3>
+            <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}> Technical Stack</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               {["Python 3", "scikit-learn", "pandas", "NumPy", "matplotlib", "imbalanced-learn (SMOTE)", "Jupyter Notebook", "k-NN Classifier", "Ball-Tree Algorithm", "SMOTE Oversampling", "Z-score Normalization", "Confusion Matrix Eval"].map(t => (
                 <span key={t} style={{ background: "#e0f2fe", color: "#0c4a6e", border: "1px solid #bae6fd", borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>{t}</span>
@@ -789,16 +856,17 @@ export default function App() {
 
       </div>
 
+
+
+
       {/* FOOTER */}
       <footer style={{ background: COLORS.navy, color: "rgba(255,255,255,0.6)", padding: "40px 24px", marginTop: 60, textAlign: "center" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 6 }}>Dr. B.R. Ambedkar National Institute of Technology, Jalandhar</div>
-          <div style={{ fontSize: 13, marginBottom: 4 }}>Department of Metallurgical & Materials Engineering</div>
+          <div style={{ fontSize: 13, marginBottom: 4 }}>Department of Industrial and Production Engineering</div>
           <div style={{ fontSize: 13, marginBottom: 16 }}>Jalandhar — 144011, Punjab, India</div>
-          <div style={{ display: "inline-block", background: "rgba(200,168,75,0.15)", border: "1px solid rgba(200,168,75,0.4)", borderRadius: 8, padding: "8px 20px", fontSize: 12, color: COLORS.gold }}>
-            Funded by DST-SERB Core Research Grant CRG/2021/005256
-          </div>
-          <div style={{ marginTop: 16, fontSize: 11 }}>© 2023 Gupta et al. · Published in Computational Materials Science 228 (2023) 112321 · Elsevier</div>
+         
+         
         </div>
       </footer>
     </div>
