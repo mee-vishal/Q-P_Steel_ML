@@ -486,7 +486,7 @@ export default function App() {
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
             <div style={{ background: COLORS.gold, color: COLORS.navy, padding: "4px 14px", borderRadius: 999, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>NIT JALANDHAR</div>
-            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>Dept. of Metallurgical & Materials Engineering</div>
+            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>Department of Industrial and Production Engineering</div>
           </div>
           <h1 style={{ fontSize: 38, fontWeight: 900, lineHeight: 1.2, margin: "0 0 16px", maxWidth: 800 }}>
             Multi-Class Classification of Q&P Steel Microstructure
