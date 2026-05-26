@@ -182,23 +182,10 @@ function PredictionTool() {
             <div style={{ fontSize: 13, color: COLORS.steel, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Predicted Microstructure</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: result.cls.color, marginBottom: 4 }}>{result.cls.label}</div>
             <div style={{ fontSize: 14, color: COLORS.navy, marginBottom: 16 }}>{result.cls.full}</div>
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 13, color: COLORS.steel }}>Model Confidence</span>
-              <div style={{ background: "#e2e8f0", borderRadius: 999, height: 10, width: 160 }}>
-                <div style={{ width: `${result.confidence}%`, height: "100%", background: result.cls.color, borderRadius: 999, transition: "width 1s ease" }} />
-              </div>
-              <span style={{ fontSize: 15, fontWeight: 700, color: result.cls.color }}>{result.confidence}%</span>
-            </div>
+           
           </div>
 
-          {grokSuggestion && (
-            <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 12, padding: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                <span>🤖</span> AI Insight & Engineering Suggestion
-              </div>
-              <div style={{ fontSize: 14, color: "#78350f", lineHeight: 1.7 }}>{grokSuggestion}</div>
-            </div>
-          )}
+        
         </div>
       )}
     </div>
