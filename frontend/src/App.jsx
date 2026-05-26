@@ -744,7 +744,6 @@ export default function App() {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
 
         {/* PREDICTION */}
-      ```jsx
 <section id="prediction" style={{ padding: "60px 0" }}>
   <SectionTitle sub="Input your steel composition and heat treatment parameters to predict the resulting microstructure type">
     🔬 Microstructure Predictor
