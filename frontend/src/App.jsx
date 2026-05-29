@@ -103,7 +103,7 @@ function ConfusionMatrixViz() {
 
 function PredictionTool() {
   const [inputs, setInputs] = useState({ C: 0.29, Si: 1.35, Mn: 2.11, TMAE: 0.02, Ac1: 742, Ac3: 829, Ms: 357, QT: 229, PT: 367 });
-  const [result, setResult] = useState(null);
+const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [grokSuggestion, setGrokSuggestion] = useState(null);
 
@@ -121,21 +121,26 @@ function PredictionTool() {
 
   const handlePredict = async () => {
     setLoading(true);
-    setResult(null);
+    setResults(null);
     setGrokSuggestion(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
+      // const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
+      const response = await fetch("http://192.168.1.26:5000/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs),
       });
       const data = await response.json();
       console.log(data);
-      if (data.success) {
-        const cls = microstructureClasses.find(item => item.code === data.prediction_code);
-        setResult({ cls, confidence: data.confidence || 90 });
-        setGrokSuggestion(`Model predicted ${data.prediction_label} with ${data.confidence}% confidence.`);
-      } else {
+    if (data.success) {
+
+  setResults(data);
+
+  setGrokSuggestion(
+    `Consensus Prediction: ${data.consensus.label}`
+  );
+
+} else {
         alert(data.error);
       }
     } catch (error) {
@@ -173,21 +178,107 @@ function PredictionTool() {
         disabled={loading}
         style={{ display: "block", margin: "0 auto 24px", background: loading ? "#94a3b8" : COLORS.navy, color: "#fff", border: "none", borderRadius: 10, padding: "14px 48px", fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", letterSpacing: 0.5 }}
       >
-        {loading ? "Running k-NN Model..." : "Predict Microstructure"}
+       {loading
+ ? "Running KNN + RF + SVM..."
+ : "Predict Microstructure"}
       </button>
 
-      {result && (
-        <div style={{ animation: "fadeIn 0.5s ease" }}>
-          <div style={{ background: `linear-gradient(135deg, ${result.cls.color}15, ${result.cls.color}05)`, border: `2px solid ${result.cls.color}40`, borderRadius: 14, padding: 24, marginBottom: 20, textAlign: "center" }}>
-            <div style={{ fontSize: 13, color: COLORS.steel, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Predicted Microstructure</div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: result.cls.color, marginBottom: 4 }}>{result.cls.label}</div>
-            <div style={{ fontSize: 14, color: COLORS.navy, marginBottom: 16 }}>{result.cls.full}</div>
-           
-          </div>
+{results && (
 
-        
-        </div>
+  <div style={{ marginTop: 20 }}>
+
+    {/* Consensus Card */}
+
+    <div
+      style={{
+        background: "#ecfdf5",
+        border: "2px solid #10b981",
+        borderRadius: 14,
+        padding: 20,
+        marginBottom: 20,
+        textAlign: "center"
+      }}
+    >
+      <h2 style={{ margin: 0 }}>
+        Consensus Prediction
+      </h2>
+
+      <div
+        style={{
+          fontSize: 28,
+          fontWeight: 800,
+          color: "#059669"
+        }}
+      >
+        {results.consensus.label}
+      </div>
+
+      <div>
+        Agreement: {results.consensus.agreement}
+      </div>
+    </div>
+
+    {/* Model Cards */}
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit,minmax(250px,1fr))",
+        gap: 16
+      }}
+    >
+
+      {Object.entries(results.predictions).map(
+        ([model, data]) => (
+
+          <div
+            key={model}
+            style={{
+              background: "#fff",
+              border: "1px solid #e2e8f0",
+              borderRadius: 12,
+              padding: 18
+            }}
+          >
+
+            <h3
+              style={{
+                marginTop: 0,
+                textTransform: "uppercase"
+              }}
+            >
+              {model.replace("_", " ")}
+            </h3>
+
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                color: COLORS.navy
+              }}
+            >
+              {data.label}
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                color: COLORS.steel
+              }}
+            >
+              
+            </div>
+
+          </div>
+        )
       )}
+
+    </div>
+
+  </div>
+
+)}
     </div>
   );
 }
@@ -746,7 +837,7 @@ export default function App() {
         {/* PREDICTION */}
 <section id="prediction" style={{ padding: "60px 0" }}>
   <SectionTitle sub="Input your steel composition and heat treatment parameters to predict the resulting microstructure type">
-    🔬 Microstructure Predictor
+     Microstructure Predictor
   </SectionTitle>
 
   <Card>
@@ -756,7 +847,7 @@ export default function App() {
     <RecommendedRanges />
   </Card>
 </section>
-```
+
 
 
         {/* MODEL PERFORMANCE */}
@@ -954,7 +1045,7 @@ export default function App() {
             <Card>
               <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: COLORS.navy }}>📰 Primary Research Paper</h3>
               <div style={{ background: COLORS.light, borderRadius: 10, padding: 16, marginBottom: 14 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: COLORS.navy, marginBottom: 6 }}>A machine learning model for multi-class classification of quenched and partitioned steel microstructure type by the k-nearest neighbor algorithm</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: COLORS.navy, marginBottom: 6 }}>Multi-Class Classification of Q&P Steel Microstructure using Ensemble ML Models</div>
                 <div style={{ fontSize: 12, color: COLORS.steel }}>Ashutosh Kumar Gupta, Sunny Chakroborty, Swarup Kumar Ghosh, Subhas Ganguly</div>
                 <div style={{ fontSize: 12, color: COLORS.accent, marginTop: 4 }}>Computational Materials Science 228 (2023) 112321 · Elsevier</div>
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2, wordBreak: "break-all" }}>https://doi.org/10.1016/j.commatsci.2023.112321</div>
