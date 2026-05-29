@@ -124,8 +124,8 @@ const [results, setResults] = useState(null);
     setResults(null);
     setGrokSuggestion(null);
     try {
-      // const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
-      const response = await fetch("http://192.168.1.26:5000/predict", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
+      // const response = await fetch("http://192.168.1.26:5000/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs),
